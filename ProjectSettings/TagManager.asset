@@ -3,12 +3,19 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - Light Emitters
+  - Deadly
+  - Lit Tilemap
+  - Exit
+  - Torch
+  - Trigger
+  - Rope
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Rope
   - Water
   - UI
   - 
@@ -43,4 +50,19 @@ TagManager:
     locked: 0
   - name: Fluids
     uniqueID: 3619313019
+    locked: 0
+  - name: Particles
+    uniqueID: 1110666861
+    locked: 0
+  - name: Exit
+    uniqueID: 609199841
+    locked: 0
+  - name: Items
+    uniqueID: 3223246085
+    locked: 0
+  - name: Player
+    uniqueID: 2059204889
+    locked: 0
+  - name: UI
+    uniqueID: 3352536971
     locked: 0

@@ -33,6 +33,10 @@ namespace Utilities
             {
                 return (a + b) / 2;
             }
+            public static Vector2 Average (Vector2 a, Vector2 b)
+            {
+                return (a + b) / 2;
+            }
         }
     }
 }

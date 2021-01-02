@@ -56,12 +56,26 @@
     <Analyzer Include="C:\Program Files (x86)\Microsoft Visual Studio Tools for Unity\16.0\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Sound\SoundManager.cs" />
+    <Compile Include="Assets\Scripts\Sound\Step.cs" />
+    <Compile Include="Assets\Scripts\Physics\Lighting\Visuals\AffectOnLightingTilemap.cs" />
     <Compile Include="Assets\Scripts\Physics\Lighting\Logic\LightBehavior.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
+    <Compile Include="Assets\Scripts\Physics\Lighting\Torch.cs" />
+    <Compile Include="Assets\FPSCounter.cs" />
     <Compile Include="Assets\Scripts\Physics\Lighting\Visuals\AffectOnLighting.cs" />
-    <Compile Include="Assets\Scripts\Player\CharacterController2D.cs" />
+    <Compile Include="Assets\Scripts\Physics\FluidDependent.cs" />
     <Compile Include="Assets\Scripts\Physics\FluidPhysics.cs" />
+    <Compile Include="Assets\Scripts\Exit\Exit.cs" />
     <Compile Include="Assets\Scripts\Utilities.cs" />
+    <Compile Include="Assets\Scripts\Exit\SceneLoader.cs" />
+    <Compile Include="Assets\Scripts\Player\Death.cs" />
+    <Compile Include="Assets\Scripts\Player\CharacterController2D.cs" />
+    <Compile Include="Assets\Scripts\Physics\ImpactSound.cs" />
+    <Compile Include="Assets\Scripts\Physics\Lighting\Visuals\LightEmitting.cs" />
+    <Compile Include="Assets\Scripts\TriggerManager.cs" />
+    <Compile Include="Assets\Scripts\CameraAspect.cs" />
+    <Compile Include="Assets\Scripts\Physics\Rope.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
