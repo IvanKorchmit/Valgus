@@ -545,7 +545,7 @@ GameObject:
   - component: {fileID: 570205517}
   - component: {fileID: 570205519}
   - component: {fileID: 570205518}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Level
   m_TagString: Lit Tilemap
   m_Icon: {fileID: 0}
@@ -39281,6 +39281,7 @@ MonoBehaviour:
     isObstacle: 0
     isDeadly: 1
   fluidTile: {fileID: 11400000, guid: 59578a4f5fc3b444dbcbdf929f132aec, type: 2}
+  deadlyParticle: {fileID: 1075809315197160754, guid: 76dd51026c2e92c438885b56d76d0249, type: 3}
 --- !u!4 &1934402767
 Transform:
   m_ObjectHideFlags: 0

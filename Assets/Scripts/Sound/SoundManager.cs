@@ -5,6 +5,8 @@ using UnityEngine;
 public class SoundManager : MonoBehaviour
 {
     public SoundEffect[] sounds;
+    public GameObject musicObject;
+    public AudioClip music;
     public void PlaySound(SoundEffect.SoundEvent e)
     {
         foreach (SoundEffect item in sounds)
@@ -15,7 +17,19 @@ public class SoundManager : MonoBehaviour
                 var sound = item.Play();
                 Destroy(sound.gameObject, sound.clip.length + 1);
                 break;
-            }
+            }   
+        }
+    }
+    private void Start()
+    {
+        musicObject = GameObject.Find("Music");
+        if(musicObject == null)
+        {
+            musicObject = new GameObject("Music", typeof(AudioSource));
+            musicObject.GetComponent<AudioSource>().loop = true;
+            musicObject.GetComponent<AudioSource>().clip = music;
+            musicObject.GetComponent<AudioSource>().Play();
+            DontDestroyOnLoad(musicObject);
         }
     }
 }
@@ -35,7 +49,8 @@ public class SoundEffect
         onJumpImpact,
         onJump,
         onStep,
-        ButtonPush
+        ButtonPush,
+        Explosion
     }
     public AudioClip[] Sounds; // List of sounds. If there're more than one sound. It will pick randomly
     public SoundEvent soundEvent;

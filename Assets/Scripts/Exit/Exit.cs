@@ -8,6 +8,7 @@ public class Exit : MonoBehaviour
     // Update is called once per frame
     public void onExitSuccessfull()
     {
-        SceneManager.LoadSceneAsync(nextLevel, LoadSceneMode.Single);
+            SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex+1, LoadSceneMode.Single);
+
     }
 }

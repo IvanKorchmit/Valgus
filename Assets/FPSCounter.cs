@@ -11,7 +11,7 @@ public class FPSCounter : MonoBehaviour
     {
         fps_Sum += (1.0f / Time.smoothDeltaTime);
         fps_Amount++;
-        GUI.Label(new Rect(0, 0, 100, 100),$"{ (int)(1.0f / Time.smoothDeltaTime)} FPS \n" +
+        GUI.Label(new Rect(0, 70, 100, 100),$"{ (int)(1.0f / Time.smoothDeltaTime)} FPS \n" +
             $"{(int)fps_Sum/fps_Amount} Average");
     }
 

@@ -32,6 +32,10 @@ public class AffectOnLightingTilemap : MonoBehaviour
         {
             for (int y = culling.y; y < cullingEnd.y; y++)
             {
+                if(!(x > 0 && x < lightManager.lightLevel.GetLength(0)-1 && y > 0 && y < lightManager.lightLevel.GetLength(1)-1))
+                {
+                    continue;
+                }
                 Vector3Int tilePos = new Vector3Int(x, y, 0) + offset;
                 if (lightManager.lightLevel[x, y].Power <= lightManager.IgnorePower || lightManager.lightLevel[x, y].color == Color.black)
                 {

@@ -18,6 +18,7 @@ public class FluidPhysics : MonoBehaviour
     public TileBase fluidTile;
     private Stopwatch sw = new Stopwatch();
     private SoundManager sfxManager;
+    public GameObject deadlyParticle;
 
     private void Start()
     {
@@ -112,7 +113,7 @@ public class FluidPhysics : MonoBehaviour
                 newField = ApplyRule(x, y, newField, direction, ref changes, ref count);
             }
         }
-        if ((float)changes / count > 0.3f)
+        if ((float)changes / count >= 0.2f)
         {
             sfxManager.PlaySound(SoundEffect.SoundEvent.onWaterMove);
         }
@@ -137,7 +138,18 @@ public class FluidPhysics : MonoBehaviour
                 fluidTilemap.SetTileFlags(right, TileFlags.None);
                 fluidTilemap.SetTileFlags(top, TileFlags.None);
                 fluidTilemap.SetTileFlags(bottom, TileFlags.None);
-
+                if(fluidTilemap.GetTile(top) == null && fluidTilemap.GetTile(tilepos) != null)
+                {
+                    if (fluidField[x, y].isDeadly)
+                    {
+                        Color color = fluidTilemap.GetColor(tilepos);
+                        GameObject particle = Instantiate(deadlyParticle, new Vector2(top.x+0.5f,top.y), Quaternion.identity);
+                        ParticleSystem ps = particle.GetComponent<ParticleSystem>();
+                        var main = ps.main;
+                        main.startColor = new ParticleSystem.MinMaxGradient(color, ColorManipulation.mixColors(color,new Color(1, 1, 1, color.a)));
+                    }
+                }
+                
                 fluidTilemap.SetColor(tilepos, adaptColor(x, y, fluidField[x, y].color));
                 if (x > 0)
                     fluidTilemap.SetColor(left, adaptColor(x - 1, y, fluidField[x - 1, y].color));

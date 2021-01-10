@@ -75,3 +75,10 @@ MonoBehaviour:
   - Sounds:
     - {fileID: 8300000, guid: 58120da7a4a64824bbbd1d60f51312a0, type: 3}
     soundEvent: 11
+  - Sounds:
+    - {fileID: 8300000, guid: b9c6105091e54f142932b10372db25ec, type: 3}
+    - {fileID: 8300000, guid: c141e6d5431ecab4da950013d8f70fb9, type: 3}
+    - {fileID: 8300000, guid: 57079a008cdab0944a398f30acb536bd, type: 3}
+    soundEvent: 12
+  musicObject: {fileID: 0}
+  music: {fileID: 8300000, guid: 55025bd9e9be9524d844ee12f56e089a, type: 3}

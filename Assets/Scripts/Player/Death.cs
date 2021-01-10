@@ -13,7 +13,7 @@ public class Death : MonoBehaviour
         sfxManager.PlaySound(SoundEffect.SoundEvent.Death);
         Instantiate(particle, transform.position,Quaternion.identity);
         int activeScene = SceneManager.GetActiveScene().buildIndex;
-        StartCoroutine(sceneManager.loadScene(activeScene, 3));
+        StartCoroutine(sceneManager.loadScene(activeScene, 0.5f));
         foreach (var coll in collidersToDestroy)
         {
             Destroy(coll);

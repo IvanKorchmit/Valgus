@@ -243,7 +243,7 @@ public class PlayerMovement : MonoBehaviour
         }
         else
         {
-            if (!collision.isTrigger)
+            if (!collision.isTrigger && !collision.gameObject.CompareTag("Rope"))
             {
                 if(!isGrounded && moveDirection.y == 0)
                 {

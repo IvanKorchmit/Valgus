@@ -11,6 +11,7 @@ TagManager:
   - Torch
   - Trigger
   - Rope
+  - Button
   layers:
   - Default
   - TransparentFX
@@ -18,8 +19,8 @@ TagManager:
   - Rope
   - Water
   - UI
-  - 
-  - 
+  - Obstacle
+  - FloorRaycast
   - 
   - 
   - 

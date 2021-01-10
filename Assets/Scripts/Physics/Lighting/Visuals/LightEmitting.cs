@@ -32,14 +32,15 @@ public class LightEmitting : MonoBehaviour
         if(rb != null)
         {
             IntPosition = Vector3Int.FloorToInt(rb.position)-offset;
+            IntPosition.z = 0;
 
         }
         else
         {
             IntPosition = Vector3Int.FloorToInt(transform.position)-offset;
-
+            IntPosition.z = 0;
         }
-        if(oldPosition != IntPosition)
+        if (oldPosition != IntPosition)
         {
             oldPosition = IntPosition;
         }

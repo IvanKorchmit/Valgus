@@ -13,16 +13,18 @@ public class FluidDependent : MonoBehaviour
     private float initGravity;
     private void Start()
     {
+        obstacle = GameObject.Find("Grid").transform.Find("Level").GetComponent<Tilemap>();
+        fluidManager = GameObject.Find("FluidPhysics").GetComponent<FluidPhysics>();
         rb = GetComponent<Rigidbody2D>();
         offset = obstacle.origin;
         initGravity = rb.gravityScale;
     }
     private void FixedUpdate()
     {
-        currentPos = Vector3Int.FloorToInt(transform.position)-offset;
+        currentPos = Vector3Int.FloorToInt(transform.position) - offset;
         Fluid currentFluid = fluidManager.fluidField[currentPos.x, currentPos.y];
         float fluidLevel = (float)currentFluid.Level / fluidManager.MaximumLevel;
-        if(currentFluid.Level == 0)
+        if (currentFluid.Level == 0)
         {
             rb.gravityScale = initGravity;
         }
@@ -31,7 +33,7 @@ public class FluidDependent : MonoBehaviour
             rb.gravityScale = initGravity * fluidLevel;
             rb.drag = rb.gravityScale / fluidLevel;
         }
-        else if(currentFluid.Level >= 5)
+        else if (currentFluid.Level >= 5)
         {
             rb.gravityScale = -initGravity * fluidLevel;
             rb.drag = rb.gravityScale / fluidLevel;

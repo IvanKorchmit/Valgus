@@ -45,6 +45,7 @@ public class LightBehavior : MonoBehaviour
     public float fade;
     [Tooltip("List of tiles which can be counted as light sources")]
     public LightSource[] lightBulbs;
+    // private MeshLighting mesh;
     #endregion
 
     private void Start()
@@ -56,10 +57,11 @@ public class LightBehavior : MonoBehaviour
         defineLightSources();
         updateVisuals();
         sw.Stop();
-        if(logging)
-        UnityEngine.Debug.Log($"The definition, finding light sources and calculating light \n" +
-            $" including color interpolation in between took {sw.ElapsedMilliseconds}ms in total to finish the task");
+        if (logging)
+            UnityEngine.Debug.Log($"The definition, finding light sources and calculating light \n" +
+                $" including color interpolation in between took {sw.ElapsedMilliseconds}ms in total to finish the task");
         enabled = true;
+        // mesh = GetComponent<MeshLighting>();
 
     }
     public void Step()
@@ -69,8 +71,12 @@ public class LightBehavior : MonoBehaviour
             defineLightSources();
             updateVisuals();
             Texture2D texture = DrawLightMap();
-            texture.filterMode = FilterMode.Point;
-            DebugSprite.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            if (texture != null)
+            {
+                texture.filterMode = FilterMode.Point;
+                DebugSprite.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
+            }
+            // mesh.UpdateVisuals();
         }
     }
     public void defineLightSources()
@@ -104,8 +110,8 @@ public class LightBehavior : MonoBehaviour
             }
         }
         sw.Stop();
-        if(logging)
-        print($"defineLightSources {sw.ElapsedMilliseconds}");
+        if (logging)
+            print($"defineLightSources {sw.ElapsedMilliseconds}");
         lightLevel = calculateLighting(lightLevel);
     }
     public Light[,] calculateLighting(Light[,] self)
@@ -132,8 +138,8 @@ public class LightBehavior : MonoBehaviour
             }
         }
         sw.Stop();
-        if(logging)
-        print($"calculateLighting {sw.ElapsedMilliseconds}");
+        if (logging)
+            print($"calculateLighting {sw.ElapsedMilliseconds}");
         return newLight;
     }
     // applies rules based on neighbors
@@ -207,7 +213,7 @@ public class LightBehavior : MonoBehaviour
             }
             if (y < newLight.GetLength(1) - 1)
             {
-                if (newLight[x, y + 1].Power + fade< newLight[x, y].Power)
+                if (newLight[x, y + 1].Power + fade < newLight[x, y].Power)
                 {
                     newLight[x, y + 1].Power = newLight[x, y].Power - fade;
                     if (newLight[x, y].color != Color.black && newLight[x, y + 1].color != Color.black && newLight[x, y].color != newLight[x, y + 1].color)
@@ -245,19 +251,22 @@ public class LightBehavior : MonoBehaviour
     {
         sw.Reset();
         sw.Start();
-        Vector3 offsetBounds = new Vector3(1, 1,0);
+        Vector3 offsetBounds = new Vector3(1, 1, 0);
         Vector3 cullingFloatStart = main.ViewportToWorldPoint(new Vector3(0, 0, 0));
-        Vector3Int culling = Vector3Int.FloorToInt(cullingFloatStart)-offset;
-
+        Vector3Int culling = Vector3Int.FloorToInt(cullingFloatStart) - offset;
+        culling.x -= 3;
+        culling.y -= 3;
         Vector3 cullingFloatEnd = main.ViewportToWorldPoint(new Vector3(1, 1, 0)) + offsetBounds;
         Vector3Int cullingEnd = Vector3Int.FloorToInt(cullingFloatEnd) - offset;
-
+        cullingEnd.x += 3;
+        cullingEnd.y += 3;
         for (int x = culling.x; x < cullingEnd.x; x++)
         {
             for (int y = culling.y; y < cullingEnd.y; y++)
             {
                 Vector3Int tilePos = new Vector3Int(x, y, 0) + offset;
-                if (lightLevel[x, y].Power <= IgnorePower || lightLevel[x, y].color == Color.black)
+                TileBase tilebase = LitTilemap.GetTile(tilePos);
+                if (tilebase == null || lightLevel[x, y].Power <= IgnorePower || lightLevel[x, y].color == Color.black)
                 {
                     LitTilemap.SetTileFlags(tilePos, TileFlags.None);
                     LitTilemap.SetColor(tilePos, Color.black);
@@ -276,13 +285,13 @@ public class LightBehavior : MonoBehaviour
             }
         }
         sw.Stop();
-        if(logging)
-        print($"updateVisuals {sw.ElapsedMilliseconds}");
+        if (logging)
+            print($"updateVisuals {sw.ElapsedMilliseconds}");
     }
     private Texture2D DrawLightMap()
     {
+        if (!DebugSprite.gameObject.activeInHierarchy) return null;
         Texture2D newText = new Texture2D(lightLevel.GetLength(0), lightLevel.GetLength(1));
-        if (!DebugSprite.gameObject.activeInHierarchy) return newText;
         for (int x = 0; x < lightLevel.GetLength(0); x++)
         {
             for (int y = 0; y < lightLevel.GetLength(1); y++)
@@ -324,7 +333,7 @@ public class LightBehavior : MonoBehaviour
     private Light FindEmitters(Vector3Int position)
     {
         position -= offset;
-
+        
         if (!isLightEmitter(position + offset))
         {
             return lightLevel[position.x, position.y];
@@ -353,7 +362,7 @@ public class LightBehavior : MonoBehaviour
             foreach (var light in lightEmitters)
             {
                 LightEmitting lEmit = light.GetComponent<LightEmitting>();
-                if(lEmit == null)
+                if (lEmit == null)
                 {
                     continue;
                 }
