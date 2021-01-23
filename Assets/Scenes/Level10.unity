@@ -14537,7 +14537,7 @@ MonoBehaviour:
   lightSources: {fileID: 1621570851}
   LitTilemap: {fileID: 570205516}
   logging: 0
-  IgnorePower: 1
+  IgnorePower: 0
   enabled: 1
   DebugSprite: {fileID: 1110656335}
   DebugDrawMode: 2
@@ -15476,6 +15476,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Logging: 0
+  disableParticles: 0
   MaximumLevel: 10
   ObstacleField: {fileID: 570205516}
   fluidTilemap: {fileID: 958355725}
@@ -15491,6 +15492,10 @@ MonoBehaviour:
     isDeadly: 1
   fluidTile: {fileID: 11400000, guid: 59578a4f5fc3b444dbcbdf929f132aec, type: 2}
   deadlyParticle: {fileID: 1075809315197160754, guid: 76dd51026c2e92c438885b56d76d0249, type: 3}
+  fluidTiles:
+    center: {fileID: 11400000, guid: 5569ebb5912e002458b8589450e3d379, type: 2}
+    TopLeft: {fileID: 11400000, guid: 534dabfb09f68b84a8d3a742d58b3051, type: 2}
+    TopRight: {fileID: 11400000, guid: a19d023f7ef2ceb4abc91c37ec398518, type: 2}
 --- !u!4 &1934402767
 Transform:
   m_ObjectHideFlags: 0

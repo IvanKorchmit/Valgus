@@ -37,6 +37,10 @@ public class AffectOnLightingTilemap : MonoBehaviour
                     continue;
                 }
                 Vector3Int tilePos = new Vector3Int(x, y, 0) + offset;
+                if(self.GetTile(tilePos) == null)
+                {
+                    continue;
+                }
                 if (lightManager.lightLevel[x, y].Power <= lightManager.IgnorePower || lightManager.lightLevel[x, y].color == Color.black)
                 {
                     self.SetTileFlags(tilePos, TileFlags.None);

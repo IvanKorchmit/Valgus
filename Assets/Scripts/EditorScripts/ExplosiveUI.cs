@@ -1,5 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
+#if (UNITY_EDITOR)
 using UnityEngine;
 using UnityEditor;
 [CustomEditor(typeof(Explosive))]
@@ -18,3 +17,4 @@ public class ExplosiveUI : Editor
         }
     }
 }
+#endif

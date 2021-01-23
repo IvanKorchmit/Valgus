@@ -4,9 +4,13 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using System.Diagnostics;
 using Utilities.ColorManipulation;
+using UnityEngine.Experimental.Rendering.Universal;
+
 public class LightBehavior : MonoBehaviour
 {
+    public Light test;
     #region fields
+    private GameObject[] lights;
     public enum DebuggerMode
     {
         OnlyBrightness,
@@ -15,6 +19,7 @@ public class LightBehavior : MonoBehaviour
         OnlyFluidColor,
         ShowOnlyGlowingLiquids,
     }
+    public GameObject lightPrefab;
     public Light[,] lightLevel;
     private Camera main;
     private Vector3Int offset;
@@ -55,7 +60,8 @@ public class LightBehavior : MonoBehaviour
         offset = LitTilemap.origin;
         sw.Start();
         defineLightSources();
-        updateVisuals();
+        InitializeLight();
+        // updateVisuals();
         sw.Stop();
         if (logging)
             UnityEngine.Debug.Log($"The definition, finding light sources and calculating light \n" +
@@ -64,8 +70,28 @@ public class LightBehavior : MonoBehaviour
         // mesh = GetComponent<MeshLighting>();
 
     }
+    private void InitializeLight()
+    {
+        for (int x = 0; x < LitTilemap.size.x; x++)
+        {
+            for (int y = 0; y < LitTilemap.size.y; y++)
+            {
+                Vector3Int pos = new Vector3Int(x, y,0) + offset;
+                if (LitTilemap.GetTile(pos) == null) continue;
+                var light = Instantiate(lightPrefab, pos, Quaternion.identity);
+                light.name = $"Light {x} {y}";
+                light.GetComponent<Light2D>().color = Color.black;
+                lightLevel[x, y].assigned = light.GetComponent<Light2D>();
+
+            }
+        }
+        lights = GameObject.FindGameObjectsWithTag("Light");
+        print(lights.Length);
+    }
     public void Step()
     {
+        sw.Reset();
+        sw.Start();
         if (enabled)
         {
             defineLightSources();
@@ -78,32 +104,50 @@ public class LightBehavior : MonoBehaviour
             }
             // mesh.UpdateVisuals();
         }
+        sw.Stop();
+        if (logging)
+            print($"Step() {sw.ElapsedMilliseconds}ms");
     }
     public void defineLightSources()
     {
         sw.Reset();
         sw.Start();
-        for (int x = 0; x < lightLevel.GetLength(0); x++)
+        int emittersCount = GameObject.FindGameObjectsWithTag("Light Emitters").Length;
+        Vector3 offsetBounds = new Vector3(1, 1, 0);
+        Vector3 cullingFloatStart = main.ViewportToWorldPoint(new Vector3(0, 0, 0));
+        Vector3Int culling = Vector3Int.FloorToInt(cullingFloatStart) - offset;
+        culling.x -= 5;
+        culling.y -= 5;
+        Vector3 cullingFloatEnd = main.ViewportToWorldPoint(new Vector3(1, 1, 0)) + offsetBounds;
+        Vector3Int cullingEnd = Vector3Int.FloorToInt(cullingFloatEnd) - offset;
+        cullingEnd.x += 5;
+        cullingEnd.y += 5;
+        for (int x = culling.x; x < cullingEnd.x; x++)
         {
-            for (int y = 0; y < lightLevel.GetLength(1); y++)
+            for (int y = culling.y; y < cullingEnd.y; y++)
             {
                 Vector3Int tilePos = new Vector3Int(x, y, 0) + offset;
                 bool isEmitter = isLightEmitter(tilePos);
+                if (!(x > 0 && x < lightLevel.GetLength(0) && y > 0 && y < lightLevel.GetLength(1)))
+                {
+                    continue;
+                }
                 if (fluidManager.fluidField != null)
                 {
                     if (!isEmitter)
                     {
                         if (fluidManager.fluidField[x, y].isObstacle && lightSources.GetTile(tilePos) == null && !fluidManager.fluidField[x, y].isGlowing)
                         {
-                            lightLevel[x, y] = new Light(0);
+                            lightLevel[x, y].Power = 0;
+                            lightLevel[x, y].color = Color.black;
                             continue;
                         }
-                        lightLevel[x, y] = checkLightbulb(x, y);
-                        lightLevel = fluidManager.LightFluid(lightLevel, x, y);
+                        lightLevel[x, y] = checkLightbulb(x, y, ref lightLevel[x, y]);
+                        lightLevel = fluidManager.LightFluid(lightLevel, x, y, ref lightLevel[x,y]);
                     }
                     else
                     {
-                        lightLevel[x, y] = FindEmitters(tilePos);
+                        lightLevel[x, y] = FindEmitters(tilePos, emittersCount, ref lightLevel[x,y]);
 
                     }
                 }
@@ -157,6 +201,8 @@ public class LightBehavior : MonoBehaviour
             }
             else
             {
+                newLight[x, y].color = Color.black;
+
                 newLight[x, y].Power = 0;
             }
 
@@ -229,26 +275,34 @@ public class LightBehavior : MonoBehaviour
         }
         return newLight;
     }
-    private Light checkLightbulb(int x, int y)
+    private Light checkLightbulb(int x, int y, ref Light cur)
     {
         Vector3Int currentTilePos = new Vector3Int(x, y, 0) + offset;
         TileBase currentTile = lightSources.GetTile(currentTilePos);
-        Light newLight = new Light(0);
         if (lightSources.GetTile(currentTilePos) == null)
         {
-            return newLight;
+            cur.Power = 0;
+            lightLevel[x, y].color = Color.black;
+            return cur;
         }
         for (int i = 0; i < lightBulbs.Length; i++)
         {
             if (lightBulbs[i].LightTile == currentTile)
             {
-                newLight = lightBulbs[i].light;
+                cur.Power = lightBulbs[i].light.Power;
+                cur.color = lightBulbs[i].light.color;
+                break;
+
             }
         }
-        return newLight;
+        return cur;
     }
     private void updateVisuals()
     {
+        sw.Reset();
+        sw.Start();
+        #region old code
+        /*
         sw.Reset();
         sw.Start();
         Vector3 offsetBounds = new Vector3(1, 1, 0);
@@ -266,6 +320,10 @@ public class LightBehavior : MonoBehaviour
             {
                 Vector3Int tilePos = new Vector3Int(x, y, 0) + offset;
                 TileBase tilebase = LitTilemap.GetTile(tilePos);
+                if(!(x >= 0 && x < lightLevel.GetLength(0) && y >= 0 && y < lightLevel.GetLength(1)))
+                {
+                    continue;
+                }
                 if (tilebase == null || lightLevel[x, y].Power <= IgnorePower || lightLevel[x, y].color == Color.black)
                 {
                     LitTilemap.SetTileFlags(tilePos, TileFlags.None);
@@ -287,6 +345,51 @@ public class LightBehavior : MonoBehaviour
         sw.Stop();
         if (logging)
             print($"updateVisuals {sw.ElapsedMilliseconds}");
+        */
+        #endregion
+
+
+
+        Vector3 offsetBounds = new Vector3(1, 1, 0);
+        Vector3 cullingFloatStart = main.ViewportToWorldPoint(new Vector3(0, 0, 0));
+        Vector3Int culling = Vector3Int.FloorToInt(cullingFloatStart) - offset;
+        culling.x -= 3;
+        culling.y -= 3;
+        Vector3 cullingFloatEnd = main.ViewportToWorldPoint(new Vector3(1, 1, 0)) + offsetBounds;
+        Vector3Int cullingEnd = Vector3Int.FloorToInt(cullingFloatEnd) - offset;
+        cullingEnd.x += 3;
+        cullingEnd.y += 3;
+        for (int x = culling.x; x < cullingEnd.x; x++)
+        {
+            for (int y = culling.y; y < cullingEnd.y; y++)
+            {
+                Vector3Int tilePos = new Vector3Int(x, y, 0) + offset;
+                TileBase tilebase = LitTilemap.GetTile(tilePos);
+                if (!(x >= 0 && x < lightLevel.GetLength(0) && y >= 0 && y < lightLevel.GetLength(1)))
+                {
+                    continue;
+                }
+                else if (tilebase == null)
+                {
+                    continue;
+                }
+                if(lightLevel[x, y].Power <= IgnorePower || lightLevel[x, y].color == Color.black)
+                {
+                    lightLevel[x, y].assigned.color = Color.black;
+                }
+                float brightness = lightLevel[x, y].Power / maximumLevel;
+                Color color = new Color(brightness, brightness, brightness, 1);
+                Color coloredLight = lightLevel[x, y].color;
+                color *= coloredLight;
+
+
+                lightLevel[x, y].assigned.color = color;
+
+            }
+        }
+        sw.Stop();
+        if(logging)
+        print($"neo UpdateVisuals() {sw.ElapsedMilliseconds}");
     }
     private Texture2D DrawLightMap()
     {
@@ -330,15 +433,19 @@ public class LightBehavior : MonoBehaviour
         newText.Apply();
         return newText;
     }
-    private Light FindEmitters(Vector3Int position)
+    private Light FindEmitters(Vector3Int position, int emitters, ref Light cur)
     {
         position -= offset;
-        
+        if (emitters == 0)
+        {
+            cur.color = Color.black;
+            cur.Power = 0;
+            return cur;
+        }
         if (!isLightEmitter(position + offset))
         {
             return lightLevel[position.x, position.y];
         }
-        Light newLight = new Light(0);
         GameObject[] lightEmitters = GameObject.FindGameObjectsWithTag("Light Emitters");
         if (lightEmitters != null)
         {
@@ -346,12 +453,13 @@ public class LightBehavior : MonoBehaviour
             {
                 if (position == light.GetComponent<LightEmitting>().IntPosition)
                 {
-                    newLight = light.GetComponent<LightEmitting>().light;
+                    cur.color = light.GetComponent<LightEmitting>().light.color;
+                    cur.Power = light.GetComponent<LightEmitting>().light.Power;
                     break;
                 }
             }
         }
-        return newLight;
+        return cur;
     }
     private bool isLightEmitter(Vector3Int position)
     {
@@ -384,31 +492,7 @@ public class LightSource
 [System.Serializable]
 public struct Light
 {
+    public Light2D assigned;
     public float Power;
     public Color color;
-    public Light(float Power)
-    {
-        this.Power = Power;
-        color = Color.black;
-    }
-    public static Light empty
-    {
-        get
-        {
-            Light l = new Light();
-            l.color = Color.black;
-            l.Power = 0;
-            return l;
-        }
-    }
-    public static Light white
-    {
-        get
-        {
-            Light l = new Light();
-            l.color = Color.white;
-            l.Power = 10;
-            return l;
-        }
-    }
 }

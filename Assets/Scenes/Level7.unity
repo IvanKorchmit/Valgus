@@ -1829,7 +1829,7 @@ TilemapRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -47074,11 +47074,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86495f0a17399084695648832425840a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  lightPrefab: {fileID: 470315126743721553, guid: 2834cc58a57553f4b9ab49e856c14075, type: 3}
   lightSources: {fileID: 1621570851}
   LitTilemap: {fileID: 570205516}
   logging: 0
-  IgnorePower: 5
-  enabled: 1
+  IgnorePower: 0
+  enabled: 0
   DebugSprite: {fileID: 1110656335}
   DebugDrawMode: 2
   fluidManager: {fileID: 1934402766}
@@ -47106,7 +47107,7 @@ GameObject:
   - component: {fileID: 958355725}
   - component: {fileID: 958355724}
   - component: {fileID: 958355726}
-  m_Layer: 0
+  m_Layer: 4
   m_Name: Fluid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -48474,7 +48475,7 @@ Tilemap:
   - m_RefCount: 0
     m_Data: {fileID: 0}
   - m_RefCount: 128
-    m_Data: {fileID: 21300000, guid: 3a1cbf57d36d562439b32acd455781e0, type: 3}
+    m_Data: {fileID: -3602426299513568801, guid: 3a1cbf57d36d562439b32acd455781e0, type: 3}
   m_TileMatrixArray:
   - m_RefCount: 128
     m_Data:
@@ -48800,7 +48801,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5564450972244460234, guid: 1ce90a6fb5adc3c449225b0a25cc69c1, type: 3}
       propertyPath: orthographic size
-      value: 24.6734
+      value: 4.583069
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1ce90a6fb5adc3c449225b0a25cc69c1, type: 3}
@@ -49020,6 +49021,43 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2ef66020062750b4aa217ffb12d0c83a, type: 3}
+--- !u!1 &1398246134 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5564450972244460233, guid: 1ce90a6fb5adc3c449225b0a25cc69c1, type: 3}
+  m_PrefabInstance: {fileID: 1146451242}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1398246135
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1398246134}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_RenderShadows: 1
+  m_RequiresDepthTextureOption: 2
+  m_RequiresOpaqueTextureOption: 2
+  m_CameraType: 0
+  m_Cameras: []
+  m_RendererIndex: -1
+  m_VolumeLayerMask:
+    serializedVersion: 2
+    m_Bits: 1
+  m_VolumeTrigger: {fileID: 0}
+  m_RenderPostProcessing: 0
+  m_Antialiasing: 0
+  m_AntialiasingQuality: 2
+  m_StopNaN: 0
+  m_Dithering: 0
+  m_ClearDepth: 1
+  m_AllowXRRendering: 1
+  m_RequiresDepthTexture: 0
+  m_RequiresColorTexture: 0
+  m_Version: 2
 --- !u!1001 &1422128929
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -49572,6 +49610,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Logging: 0
+  disableParticles: 0
   MaximumLevel: 10
   ObstacleField: {fileID: 570205516}
   fluidTilemap: {fileID: 958355725}
@@ -49587,6 +49626,10 @@ MonoBehaviour:
     isDeadly: 1
   fluidTile: {fileID: 11400000, guid: 59578a4f5fc3b444dbcbdf929f132aec, type: 2}
   deadlyParticle: {fileID: 1075809315197160754, guid: 76dd51026c2e92c438885b56d76d0249, type: 3}
+  fluidTiles:
+    center: {fileID: 11400000, guid: 5569ebb5912e002458b8589450e3d379, type: 2}
+    TopLeft: {fileID: 11400000, guid: 534dabfb09f68b84a8d3a742d58b3051, type: 2}
+    TopRight: {fileID: 11400000, guid: a19d023f7ef2ceb4abc91c37ec398518, type: 2}
 --- !u!4 &1934402767
 Transform:
   m_ObjectHideFlags: 0

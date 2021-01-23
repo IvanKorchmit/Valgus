@@ -8,6 +8,7 @@ using System.Diagnostics;
 public class FluidPhysics : MonoBehaviour
 {
     public bool Logging;
+    public bool disableParticles;
     public int MaximumLevel;
     public Tilemap ObstacleField;
     public Tilemap fluidTilemap;
@@ -19,9 +20,12 @@ public class FluidPhysics : MonoBehaviour
     private Stopwatch sw = new Stopwatch();
     private SoundManager sfxManager;
     public GameObject deadlyParticle;
+    private Camera main;
+    public FluidTile fluidTiles;
 
     private void Start()
     {
+        main = Camera.main;
         sfxManager = GameObject.Find("SoundManager").GetComponent<SoundManager>();
         sw.Reset();
         sw.Start();
@@ -59,7 +63,7 @@ public class FluidPhysics : MonoBehaviour
                 {
                     continue;
                 }
-                if (fluidTilemap.GetTile(tilepos) != null && ObstacleField.GetColliderType(tileposObst) == Tile.ColliderType.None)
+                else if (fluidTilemap.GetTile(tilepos) != null && ObstacleField.GetColliderType(tileposObst) == Tile.ColliderType.None)
                 {
                     initialized[x, y] = FindFluidPreset(fluidTilemap.GetColor(tilepos));
                 }
@@ -124,10 +128,25 @@ public class FluidPhysics : MonoBehaviour
     }
     private void UpdateVisuals()
     {
-        for (int x = 0; x < fluidField.GetLength(0); x++)
+        sw.Reset();
+        sw.Start();
+        Vector3 offsetBounds = new Vector3(1, 1, 0);
+        Vector3 cullingFloatStart = main.ViewportToWorldPoint(new Vector3(0, 0, 0));
+        Vector3Int culling = Vector3Int.FloorToInt(cullingFloatStart) - offsetObstacle;
+        culling.x -= 5;
+        culling.y -= 5;
+        Vector3 cullingFloatEnd = main.ViewportToWorldPoint(new Vector3(1, 1, 0)) + offsetBounds;
+        Vector3Int cullingEnd = Vector3Int.FloorToInt(cullingFloatEnd) - offsetObstacle;
+        cullingEnd.x += 5;
+        cullingEnd.y += 5;
+        for (int x = culling.x; x < cullingEnd.x; x++)
         {
-            for (int y = 0; y < fluidField.GetLength(1); y++)
+            for (int y = culling.y; y < cullingEnd.y; y++)
             {
+                if (!(x > 0 && x < fluidField.GetLength(0) && y > 0 && y < fluidField.GetLength(1)))
+                {
+                    continue;
+                }
                 Vector3Int tilepos = new Vector3Int(x, y, 0) + offsetObstacle;
                 Vector3Int left = new Vector3Int(x - 1, y, 0) + offsetObstacle;
                 Vector3Int right = new Vector3Int(x + 1, y, 0) + offsetObstacle;
@@ -138,18 +157,25 @@ public class FluidPhysics : MonoBehaviour
                 fluidTilemap.SetTileFlags(right, TileFlags.None);
                 fluidTilemap.SetTileFlags(top, TileFlags.None);
                 fluidTilemap.SetTileFlags(bottom, TileFlags.None);
-                if(fluidTilemap.GetTile(top) == null && fluidTilemap.GetTile(tilepos) != null)
+                if(lightManager.LitTilemap.GetColor(tilepos) == Color.black)
                 {
-                    if (fluidField[x, y].isDeadly)
+                    fluidTilemap.SetColor(tilepos, Color.black);
+                    continue;
+                }
+                if (!disableParticles)
+                {
+                    if (fluidTilemap.GetTile(top) == null && fluidTilemap.GetTile(tilepos) != null)
                     {
-                        Color color = fluidTilemap.GetColor(tilepos);
-                        GameObject particle = Instantiate(deadlyParticle, new Vector2(top.x+0.5f,top.y), Quaternion.identity);
-                        ParticleSystem ps = particle.GetComponent<ParticleSystem>();
-                        var main = ps.main;
-                        main.startColor = new ParticleSystem.MinMaxGradient(color, ColorManipulation.mixColors(color,new Color(1, 1, 1, color.a)));
+                        if (fluidField[x, y].isDeadly)
+                        {
+                            Color color = fluidTilemap.GetColor(tilepos);
+                            GameObject particle = Instantiate(deadlyParticle, new Vector2(top.x + 0.5f, top.y), Quaternion.identity);
+                            ParticleSystem ps = particle.GetComponent<ParticleSystem>();
+                            var main = ps.main;
+                            main.startColor = new ParticleSystem.MinMaxGradient(color, ColorManipulation.mixColors(color, new Color(1, 1, 1, color.a)));
+                        }
                     }
                 }
-                
                 fluidTilemap.SetColor(tilepos, adaptColor(x, y, fluidField[x, y].color));
                 if (x > 0)
                     fluidTilemap.SetColor(left, adaptColor(x - 1, y, fluidField[x - 1, y].color));
@@ -159,7 +185,7 @@ public class FluidPhysics : MonoBehaviour
                     fluidTilemap.SetColor(top, adaptColor(x, y + 1, fluidField[x, y + 1].color));
                 if (y > 0)
                     fluidTilemap.SetColor(bottom, adaptColor(x, y - 1, fluidField[x, y - 1].color));
-                if (fluidField[x, y].isObstacle || fluidField[x, y].Level <= 0)
+                if (fluidField[x, y].isObstacle || (fluidField[x, y].Level <= 0 && fluidTilemap.GetTile(tilepos) == null))
                 {
                     fluidTilemap.SetTile(tilepos, null);
                     fluidTilemap.SetColor(tilepos, fluidField[x, y].color);
@@ -173,7 +199,16 @@ public class FluidPhysics : MonoBehaviour
                 if (fluidField[x, y].Level > 0)
                 {
                     fluidField[x, y].color.a = 1;
-                    fluidTilemap.SetTile(tilepos, fluidTile);
+                    fluidTilemap.SetTile(tilepos, fluidTiles.center);
+                    if(fluidTilemap.GetTile(left) == null && fluidTilemap.GetTile(right) != null && fluidTilemap.GetTile(bottom) != null && fluidTilemap.GetTile(top) == null && lightManager.LitTilemap.GetColliderType(left) == Tile.ColliderType.None)
+                    {
+                        fluidTilemap.SetTile(tilepos, fluidTiles.TopLeft);
+                    }
+                    else if (fluidTilemap.GetTile(left) != null && fluidTilemap.GetTile(right) == null && fluidTilemap.GetTile(bottom) != null && fluidTilemap.GetTile(top) == null && lightManager.LitTilemap.GetColliderType(right) == Tile.ColliderType.None)
+                    {
+                        fluidTilemap.SetTile(tilepos, fluidTiles.TopRight);
+
+                    }
                 }
                 else if (fluidField[x, y].Level == 0 && !fluidField[x, y].isObstacle)
                 {
@@ -183,6 +218,9 @@ public class FluidPhysics : MonoBehaviour
                 }
             }
         }
+        sw.Stop();
+        if(Logging)
+        print("UpdateVisuals() " + sw.ElapsedMilliseconds);
 
     }
     public Fluid[,] ApplyRule(int x, int y, Fluid[,] self, Vector2 loopDirection, ref int changes, ref int waterAmount)
@@ -196,6 +234,32 @@ public class FluidPhysics : MonoBehaviour
         if(newFluid[x,y].Level > 0)
         {
             waterAmount++;
+        }
+        if (newFluid[x, y].Level == 1)
+        {
+            if (loopDirection.x == 1)
+            {
+                if(x > 0)
+                {
+                    if(newFluid[x-1,y].Level <= 0 && !newFluid[x-1,y].isObstacle && newFluid[x+1,y].isObstacle)
+                    {
+                        newFluid[x - 1, y] = newFluid[x, y];
+                        newFluid[x, y].Erase();
+                    }
+                }
+            }
+            if (loopDirection.x == -1)
+            {
+                if (x > 0)
+                {
+                    if (newFluid[x + 1, y].Level <= 0 && !newFluid[x + 1, y].isObstacle && newFluid[x - 1, y].isObstacle)
+                    {
+
+                        newFluid[x + 1, y] = newFluid[x, y];
+                        newFluid[x, y].Erase();
+                    }
+                }
+            }
         }
         if (newFluid[x, y].Level == newFluid[x + 1, y].Level && newFluid[x, y].Level == newFluid[x - 1, y].Level || (isLeftObstacle || isRightObstacle))
         {
@@ -247,8 +311,13 @@ public class FluidPhysics : MonoBehaviour
                             }
                             if (newFluid[x, y].isGlowing)
                             {
-                                newFluid[x, y - 1].light.Power = splitPower(newFluid[x, y], newFluid[x, y - 1]);
-                                newFluid[x, y - 1].isGlowing = true;
+                                if (!newFluid[x, y - 1].isGlowing)
+                                {
+                                    newFluid[x, y - 1].light.Power = splitPower(newFluid[x, y], newFluid[x, y - 1]);
+                                    newFluid[x, y].light.Power = splitPower(newFluid[x, y - 1], newFluid[x, y]);
+
+                                    newFluid[x, y - 1].isGlowing = true;
+                                }
                             }
                             if (newFluid[x, y].isDeadly)
                             {
@@ -279,8 +348,13 @@ public class FluidPhysics : MonoBehaviour
                             newFluid[x, y].Level /= 2;
                             if (newFluid[x, y].isGlowing)
                             {
-                                newFluid[x - 1, y].light.Power = splitPower(newFluid[x, y], newFluid[x - 1, y]);
-                                newFluid[x - 1, y].isGlowing = true;
+                                if (!newFluid[x - 1, y].isGlowing)
+                                {
+                                    newFluid[x - 1, y].light.Power = splitPower(newFluid[x, y], newFluid[x - 1, y]);
+                                    newFluid[x, y].light.Power = splitPower(newFluid[x - 1, y], newFluid[x, y]);
+
+                                    newFluid[x - 1, y].isGlowing = true;
+                                }
                             }
                             if (newFluid[x, y].isDeadly)
                             {
@@ -304,9 +378,13 @@ public class FluidPhysics : MonoBehaviour
                             newFluid[x - 1, y].color = newFluid[x, y].color;
                             if (newFluid[x, y].isGlowing)
                             {
+                                if (!newFluid[x - 1, y].isGlowing)
+                                {
+                                    newFluid[x - 1, y].light.Power = splitPower(newFluid[x, y], newFluid[x - 1, y]);
+                                    newFluid[x, y].light.Power = splitPower(newFluid[x - 1, y], newFluid[x, y]);
 
-                                newFluid[x - 1, y].light.Power = splitPower(newFluid[x, y], newFluid[x - 1, y]);
-                                newFluid[x - 1, y].isGlowing = true;
+                                    newFluid[x - 1, y].isGlowing = true;
+                                }
                             }
                             if (newFluid[x, y].isDeadly)
                             {
@@ -338,8 +416,13 @@ public class FluidPhysics : MonoBehaviour
                             newFluid[x, y].Level /= 2;
                             if (newFluid[x, y].isGlowing)
                             {
-                                newFluid[x + 1, y].light.Power = splitPower(newFluid[x, y], newFluid[x + 1, y]);
-                                newFluid[x + 1, y].isGlowing = true;
+                                if (!newFluid[x + 1, y].isGlowing)
+                                {
+                                    newFluid[x + 1, y].light.Power = splitPower(newFluid[x, y], newFluid[x + 1, y]);
+                                    newFluid[x, y].light.Power = splitPower(newFluid[x + 1, y], newFluid[x, y]);
+
+                                    newFluid[x + 1, y].isGlowing = true;
+                                }
                             }
                             if (newFluid[x, y].isDeadly)
                             {
@@ -362,9 +445,13 @@ public class FluidPhysics : MonoBehaviour
                             newFluid[x + 1, y].color = newFluid[x, y].color;
                             if (newFluid[x, y].isGlowing)
                             {
+                                if (!newFluid[x + 1, y].isGlowing)
+                                {
+                                    newFluid[x + 1, y].light.Power = splitPower(newFluid[x, y], newFluid[x + 1, y]);
+                                    newFluid[x, y].light.Power = splitPower(newFluid[x + 1, y], newFluid[x, y]);
 
-                                newFluid[x + 1, y].light.Power = splitPower(newFluid[x, y], newFluid[x + 1, y]);
-                                newFluid[x + 1, y].isGlowing = true;
+                                    newFluid[x + 1, y].isGlowing = true;
+                                }
                             }
                             if (newFluid[x, y].isDeadly)
                             {
@@ -377,13 +464,15 @@ public class FluidPhysics : MonoBehaviour
         }
         return newFluid;
     }
-    public Light[,] LightFluid(Light[,] self, int x, int y)
+    public Light[,] LightFluid(Light[,] self, int x, int y, ref Light cur)
     {
         Light[,] lit = self;
         Vector3Int tile = new Vector3Int(x, y, 0) + offsetObstacle;
         if (lightManager.lightSources.GetTile(tile) == null && (fluidField[x, y].isObstacle || !fluidField[x, y].isGlowing))
         {
-            lit[x, y] = new Light(0);
+            cur.Power = 0;
+            cur.color = Color.black;
+            lit[x, y] = cur;
             return lit;
         }
         if (fluidField[x, y].isGlowing)
@@ -402,7 +491,8 @@ public class FluidPhysics : MonoBehaviour
     private float splitPower(Fluid current, Fluid next)
     {
         float result;
-        result = Math.Average(current.light.Power, next.light.Power);
+        // result = Math.Average(current.light.Power, next.light.Power);
+        result = current.light.Power;
         return result;
     }
     private Color adaptColor(int x, int y, Color self)
@@ -422,28 +512,7 @@ public class FluidPhysics : MonoBehaviour
 [System.Serializable]
 public struct Fluid
 {
-    public Fluid(bool clear)
-    {
-        if (clear)
-        {
-            color = Color.clear;
-            Level = 0;
-            light = Light.empty;
-            isGlowing = false;
-            isObstacle = false;
-            isDeadly = false;
-        }
-        else
-        {
-            color = Color.white;
-            Level = 10;
-            light = Light.white;
-            isGlowing = false;
-            isObstacle = false;
-            isDeadly = false;
-        }
-
-    }
+    
     public Color color;
     public int Level;
     public bool isGlowing;
@@ -455,10 +524,17 @@ public struct Fluid
         color = Color.clear;
         Level = 0;
         isGlowing = false;
-        light = Light.empty;
         isObstacle = false;
         isDeadly = false;
 
 
     }
+}
+[System.Serializable]
+public class FluidTile
+{
+    public TileBase center;
+    public TileBase TopLeft;
+    public TileBase TopRight;
+
 }

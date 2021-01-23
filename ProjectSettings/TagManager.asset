@@ -12,6 +12,7 @@ TagManager:
   - Trigger
   - Rope
   - Button
+  - Light
   layers:
   - Default
   - TransparentFX

@@ -27,6 +27,7 @@ public class PlayerMovement : MonoBehaviour
     private SpriteRenderer sp;
     public TriggerManager tManager;
     public Tilemap Triggers;
+    private float jumpTime;
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -40,33 +41,41 @@ public class PlayerMovement : MonoBehaviour
         currentPos = Vector3Int.FloorToInt(transform.position);
         currentPos.z = 0;
         moveDirection.x = Input.GetAxisRaw("Horizontal");
-        if(Input.GetKey(KeyCode.W) && (isGrounded && !isSwimming))
+        if((Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space)) && (isGrounded && !isSwimming))
         {
             moveDirection.y = 2;
         }
-        else if (!Input.GetKey(KeyCode.W))
+        else if (!(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space)))
         {
             moveDirection.y = 0;
 
         }
-        if(Input.GetKey(KeyCode.W) && isClimbing)
+        if((Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space)) && isClimbing)
         {
             moveDirection.y = 1;
 
         }
-        if (Input.GetKey(KeyCode.W) && isSwimming)
+        if ((Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space)) && isSwimming)
         {
             moveDirection.y = 1;
         }
-        else if (!Input.GetKey(KeyCode.W) && isSwimming)
+        else if (!(Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.Space)) && isSwimming)
         {
             moveDirection.y = 0;
 
         }
+        if ((Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.LeftShift)) && isSwimming)
+        {
+            moveDirection.y = -1;
 
+        }
     }
     private void FixedUpdate()
     {
+        if(!isGrounded)
+        {
+            jumpTime += Time.fixedDeltaTime;
+        }
         if (moveDirection.y != 0 && (isGrounded || isSwimming) && !isClimbing)
         {
             if (!isSwimming)
@@ -127,7 +136,7 @@ public class PlayerMovement : MonoBehaviour
         {
             rb.velocity = new Vector2(moveDirection.x*Speed, rb.velocity.y);
         }
-        else if (!isClimbing && !FreeFalling)
+        else if (!isClimbing && !FreeFalling && isSwimming)
         {
             Flow = (moveDirection * Speed / 2);
             rb.velocity = new Vector2(Flow.x, moveDirection.y * jumpforce);
@@ -137,7 +146,11 @@ public class PlayerMovement : MonoBehaviour
             rb.AddForce(moveDirection * Speed, ForceMode2D.Force);
             gameObject.GetComponent<DistanceJoint2D>().attachedRigidbody.AddForce(moveDirection * Speed, ForceMode2D.Force);
         }
-        if (moveDirection == Vector2.zero)
+        else if (FreeFalling && moveDirection.x != 0)
+        {
+            rb.AddForce(new Vector2(moveDirection.x,0), ForceMode2D.Impulse);
+        }
+        if (moveDirection == Vector2.zero && !FreeFalling)
         {
             rb.velocity = new Vector2(0, rb.velocity.y);
         }
@@ -167,6 +180,10 @@ public class PlayerMovement : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if(collision.TryGetComponent(out PointEffector2D pe))
+        {
+            FreeFalling = true;
+        }
         if (collision.gameObject.CompareTag("Rope"))
         {
             DistanceJoint2D joint;
@@ -245,11 +262,12 @@ public class PlayerMovement : MonoBehaviour
         {
             if (!collision.isTrigger && !collision.gameObject.CompareTag("Rope"))
             {
-                if(!isGrounded && moveDirection.y == 0)
+                if(jumpTime >= 1.2f && !isGrounded)
                 {
                     sfxManager.PlaySound(SoundEffect.SoundEvent.onJumpImpact);
                     Instantiate(JumpSmoke, transform.position, Quaternion.identity);
                 }
+                jumpTime = 0;
                 isGrounded = true;
                 FreeFalling = false;
             }
@@ -298,6 +316,10 @@ public class PlayerMovement : MonoBehaviour
             {
                 GetComponent<Death>().Die();
             }
+        }
+        if(collision.name == "Level")
+        {
+            isGrounded = true;
         }
     }
 }

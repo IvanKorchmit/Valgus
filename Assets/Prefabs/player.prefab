@@ -58,7 +58,7 @@ MonoBehaviour:
     color: {r: 1, g: 1, b: 1, a: 1}
   sfxManager: {fileID: 0}
   moveDirection: {x: 0, y: 0}
-  Speed: 10
+  Speed: 9.5
   jumpforce: 10
   isGrounded: 0
   isSwimming: 0
@@ -126,7 +126,7 @@ BoxCollider2D:
   m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.002878189, y: -0.47331762}
+  m_Offset: {x: -0.002878189, y: -0.4584815}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -137,7 +137,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.7724266, y: 0.16865826}
+  m_Size: {x: 0.7724266, y: 0.13898599}
   m_EdgeRadius: 0
 --- !u!114 &6864336904285241380
 MonoBehaviour:

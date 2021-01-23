@@ -42,6 +42,24 @@ EditorBuildSettings:
     path: Assets/Scenes/Level11.unity
     guid: 6c44dd79f63cec142b658ef079bb853a
   - enabled: 1
+    path: Assets/Scenes/Level12.unity
+    guid: 7b137ee242b49c744ae71e2510ea2491
+  - enabled: 1
+    path: Assets/Scenes/Level13.unity
+    guid: 1c512fe8ecbb7ab48a5fac11bf46385f
+  - enabled: 1
+    path: Assets/Scenes/Level14.unity
+    guid: 70600966bd9dbbc43ae84f1dabf3594a
+  - enabled: 1
+    path: Assets/Scenes/Level15.unity
+    guid: 25d1e6c5d07d6844682c6c7454cb189a
+  - enabled: 1
+    path: Assets/Scenes/Credits.unity
+    guid: 9ef720dd04a027146bdd4c825a6d788d
+  - enabled: 1
+    path: Assets/Scenes/Options.unity
+    guid: dfb42c79cbc2615459a69d5f977816d4
+  - enabled: 0
     path: Assets/Scenes/Sandbox.unity
     guid: 2cda990e2423bbf4892e6590ba056729
   m_configObjects: {}
